@@ -1,6 +1,19 @@
+//TODO: provide parameter for semester
 const playwright = require('playwright');
 const cliProgress = require('cli-progress');
 const jsonfile = require('jsonfile');
+
+function convert(str){
+    var arr = str.split("-");
+    var start = arr[0] >= 'A' && arr[0] <= 'Z' ? arr[0].charCodeAt(0) - 64 : arr[0];
+    var end = arr[1] >= 'A' && arr[1] <= 'Z' ? arr[1].charCodeAt(0) - 64 : arr[1];
+    var result = "";
+    for(var i = start; i <= end; i++){
+        result += i + ",";
+    }
+    return result.substring(0, result.length - 1);
+}
+
 async function main() {
     console.log("🕓 網頁載入中...");
     const browser = await playwright.chromium.launch();
@@ -16,6 +29,7 @@ async function main() {
         await page.waitForLoadState('networkidle');
         console.log(`(${i}/${options_count}) 🏫 正在取得${await options.nth(i).innerText()}的課程資料...`);
         const rows = page.locator('table tr');
+        //TODO: retry x times if failed
         const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
         const count = /*await rows.count()*/ 5;
         bar1.start(count - 3, 0);
@@ -28,13 +42,13 @@ async function main() {
                 "credit": await rows.nth(i).locator(':nth-child(4)').innerText(),
                 "hours": await rows.nth(i).locator(':nth-child(5)').innerText(),
                 "class": await rows.nth(i).locator(':nth-child(6)').innerText(),
-                "M": await rows.nth(i).locator(':nth-child(8)').innerText(),
-                "T": await rows.nth(i).locator(':nth-child(9)').innerText(),
-                "W": await rows.nth(i).locator(':nth-child(10)').innerText(),
-                "R": await rows.nth(i).locator(':nth-child(11)').innerText(),
-                "F": await rows.nth(i).locator(':nth-child(12)').innerText(),
-                "S": await rows.nth(i).locator(':nth-child(13)').innerText(),
-                "U": await rows.nth(i).locator(':nth-child(14)').innerText(),
+                "M": convert(await rows.nth(i).locator(':nth-child(8)').innerText()),
+                "T": convert(await rows.nth(i).locator(':nth-child(9)').innerText()),
+                "W": convert(await rows.nth(i).locator(':nth-child(10)').innerText()),
+                "R": convert(await rows.nth(i).locator(':nth-child(11)').innerText()),
+                "F": convert(await rows.nth(i).locator(':nth-child(12)').innerText()),
+                "S": convert(await rows.nth(i).locator(':nth-child(13)').innerText()),
+                "U": convert(await rows.nth(i).locator(':nth-child(14)').innerText()),
                 "location": /[A-Z0-9]{3,}/.exec(await rows.nth(i).locator(':nth-child(15)').innerText())[0],
                 "students": ["a"]
             });
