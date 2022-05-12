@@ -3,15 +3,24 @@ const playwright = require('playwright');
 const cliProgress = require('cli-progress');
 const jsonfile = require('jsonfile');
 
-function convert(str){
-    var arr = str.split("-");
-    var start = arr[0] >= 'A' && arr[0] <= 'Z' ? arr[0].charCodeAt(0) - 64 : arr[0];
-    var end = arr[1] >= 'A' && arr[1] <= 'Z' ? arr[1].charCodeAt(0) - 64 : arr[1];
+function convert(str) {
     var result = "";
-    for(var i = start; i <= end; i++){
-        result += i + ",";
+    for (var i = 0; i < str.length; i++) {
+        result += str[i] >= 'A' && str[i] <= 'Z' ? str[i].charCodeAt(0) - 64 : str[i];
     }
-    return result.substring(0, result.length - 1);
+    str = result;
+    if (str.includes("-")) {
+        var arr = str.split("-");
+        var start = arr[0];
+        var end = arr[1];
+        var result = "";
+        for (var i = start; i <= end; i++) {
+            result += i + ",";
+        }
+        return result.substring(0, result.length - 1);
+    } else {
+        return str;
+    }
 }
 
 async function main() {
@@ -31,28 +40,34 @@ async function main() {
         const rows = page.locator('table tr');
         //TODO: retry x times if failed
         const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
-        const count = /*await rows.count()*/ 5;
+        const count = await rows.count();
         bar1.start(count - 3, 0);
-        for (let i = 3; i < count; ++i) {
+        for (let j = 3; j < count; ++j) {
+            const student_list = await browser.newPage();
+            await student_list.goto(`https://qry.nfu.edu.tw/studlist.php?selyr=${await options.nth(i).getAttribute("value")}&seqno=${await rows.nth(j).locator(':nth-child(1) > a').innerText()}`);
+
             arr.push({
-                "id": await rows.nth(i).locator(':nth-child(1) > a').innerText(),
-                "name": await rows.nth(i).locator(':nth-child(2)').innerText(),
-                "teacher": await rows.nth(i).locator(':nth-child(7)').innerText(),
-                "type": await rows.nth(i).locator(':nth-child(3)').innerText() == "必修" ? 1 : await rows.nth(i).locator(':nth-child(3)').innerText() == "選修" ? 2 : 3,
-                "credit": await rows.nth(i).locator(':nth-child(4)').innerText(),
-                "hours": await rows.nth(i).locator(':nth-child(5)').innerText(),
-                "class": await rows.nth(i).locator(':nth-child(6)').innerText(),
-                "M": convert(await rows.nth(i).locator(':nth-child(8)').innerText()),
-                "T": convert(await rows.nth(i).locator(':nth-child(9)').innerText()),
-                "W": convert(await rows.nth(i).locator(':nth-child(10)').innerText()),
-                "R": convert(await rows.nth(i).locator(':nth-child(11)').innerText()),
-                "F": convert(await rows.nth(i).locator(':nth-child(12)').innerText()),
-                "S": convert(await rows.nth(i).locator(':nth-child(13)').innerText()),
-                "U": convert(await rows.nth(i).locator(':nth-child(14)').innerText()),
-                "location": /[A-Z0-9]{3,}/.exec(await rows.nth(i).locator(':nth-child(15)').innerText())[0],
-                "students": ["a"]
+                "id": await rows.nth(j).locator(':nth-child(1) > a').innerText(),
+                "name": await rows.nth(j).locator(':nth-child(2)').innerText(),
+                "teacher": await rows.nth(j).locator(':nth-child(7)').innerText(),
+                "type": await rows.nth(j).locator(':nth-child(3)').innerText() == "必修" ? 1 : await rows.nth(j).locator(':nth-child(3)').innerText() == "選修" ? 2 : 3,
+                "credit": await rows.nth(j).locator(':nth-child(4)').innerText(),
+                "hours": await rows.nth(j).locator(':nth-child(5)').innerText(),
+                "class": await rows.nth(j).locator(':nth-child(6)').innerText(),
+                "M": convert(await rows.nth(j).locator(':nth-child(8)').innerText()),
+                "T": convert(await rows.nth(j).locator(':nth-child(9)').innerText()),
+                "W": convert(await rows.nth(j).locator(':nth-child(10)').innerText()),
+                "R": convert(await rows.nth(j).locator(':nth-child(11)').innerText()),
+                "F": convert(await rows.nth(j).locator(':nth-child(12)').innerText()),
+                "S": convert(await rows.nth(j).locator(':nth-child(13)').innerText()),
+                "U": convert(await rows.nth(j).locator(':nth-child(14)').innerText()),
+                "location": /[A-Z0-9]{3,}/.exec(await rows.nth(j).locator(':nth-child(15)').innerText())[0],
+                "students": await student_list.$$eval('table tr td', tds => tds.map((td) => {
+                    return td.innerText;
+                }))
             });
             bar1.increment();
+            await student_list.close();
         };
         bar1.stop();
         jsonfile.writeFileSync(`./data/${await options.nth(i).getAttribute("value")}.json`, arr);
