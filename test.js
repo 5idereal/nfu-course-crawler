@@ -31,7 +31,7 @@ async function main() {
     await page.fill('#coursename', '%');
     const options = page.locator('select > option');
     const options_count = await options.count();
-    for (let i = 1; i < options_count; ++i) {
+    for (let i = 2; i < options_count; ++i) {
         let arr = [];
         page.selectOption('select#selyr', await options.nth(i).getAttribute("value"));
         await page.click('#bt_qry');
