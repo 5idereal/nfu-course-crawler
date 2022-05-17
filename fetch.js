@@ -1,4 +1,6 @@
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
 async function nfu() {
     /*const res = await fetch("https://ieet.nfu.edu.tw/coursequery/api/Course", {
         "headers": {
@@ -29,7 +31,10 @@ async function nfu() {
         "body": "pselyr=1102&pseqno=0001",
         "method": "POST"
     });
-    console.log(await res.text());
+    const dom = new JSDOM(await res.text());
+    dom.window.document.querySelectorAll("td").forEach(td => {
+        console.log(td.textContent);
+    });
 }
 
 nfu();

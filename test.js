@@ -26,8 +26,8 @@ function convert(str) {
     }
 }
 
-async function main(a) {
-    console.log("🕓 網頁載入中...");
+async function main(a = "1102") {
+    let arr = [];
     const res = await fetch("https://qry.nfu.edu.tw/classname_ajax.php", {
         "headers": {
             "accept": "text/html",
@@ -36,40 +36,42 @@ async function main(a) {
             "Referer": "https://qry.nfu.edu.tw/classname.php"
         },
         "body": `pselyr=${a}&pcoursename=%25`,
-        "method": "POST"
+        "method": "POST",
+        retry: 3
     });
-    console.log(`(${i}/${options_count}) 🏫 正在取得${await options.nth(i).innerText()}的課程資料...`);
+    const dom = new JSDOM(await res.text());
+    const row = dom.window.document.querySelectorAll("tr");
     const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
-    const count = await rows.count();
+    const count = row.length;
     bar1.start(count - 3, 0);
     for (let j = 3; j < count; ++j) {
-        const list = await fetch(`https://qry.nfu.edu.tw/studlist.php?selyr=${a}&seqno=${await rows.nth(j).locator(':nth-child(1) > a').innerText()}`);
+        try { const list= await fetch(`https://qry.nfu.edu.tw/studlist.php?selyr=${a}&seqno=${await row[j].cells[0].textContent}`) }
+        catch (e) {
+            console.log(e)
+        };
 
         arr.push({
-            "id": await rows.nth(j).locator(':nth-child(1) > a').innerText(),
-            "name": await rows.nth(j).locator(':nth-child(2)').innerText(),
-            "teacher": await rows.nth(j).locator(':nth-child(7)').innerText(),
-            "type": await rows.nth(j).locator(':nth-child(3)').innerText() == "必修" ? 1 : await rows.nth(j).locator(':nth-child(3)').innerText() == "選修" ? 2 : 3,
-            "credit": await rows.nth(j).locator(':nth-child(4)').innerText(),
-            "hours": await rows.nth(j).locator(':nth-child(5)').innerText(),
-            "class": await rows.nth(j).locator(':nth-child(6)').innerText(),
-            "M": convert(await rows.nth(j).locator(':nth-child(8)').innerText()),
-            "T": convert(await rows.nth(j).locator(':nth-child(9)').innerText()),
-            "W": convert(await rows.nth(j).locator(':nth-child(10)').innerText()),
-            "R": convert(await rows.nth(j).locator(':nth-child(11)').innerText()),
-            "F": convert(await rows.nth(j).locator(':nth-child(12)').innerText()),
-            "S": convert(await rows.nth(j).locator(':nth-child(13)').innerText()),
-            "U": convert(await rows.nth(j).locator(':nth-child(14)').innerText()),
-            "location": /[A-Z0-9]{3,}/.exec(await rows.nth(j).locator(':nth-child(15)').innerText())[0],
-            "students": await student_list.$$eval('table tr td', tds => tds.map((td) => {
-                return td.innerText;
-            }))
+            "id": row[j].cells[0].textContent,
+            "name": row[j].cells[1].textContent,
+            "teacher": row[j].cells[6].textContent,
+            "type": row[j].cells[2].textContent == "必修" ? 1 : row[j].cells[2].textContent == "選修" ? 2 : 3,
+            "credit": row[j].cells[3].textContent,
+            "hours": row[j].cells[4].textContent,
+            "class": row[j].cells[5].textContent,
+            "M": convert(row[j].cells[7].textContent),
+            "T": convert(row[j].cells[8].textContent),
+            "W": convert(row[j].cells[9].textContent),
+            "R": convert(row[j].cells[10].textContent),
+            "F": convert(row[j].cells[11].textContent),
+            "S": convert(row[j].cells[12].textContent),
+            "U": convert(row[j].cells[13].textContent),
+            "location": /[A-Z0-9]{3,}/.exec(row[j].cells[14].textContent)[0],
+            "students": ["a"]
         });
         bar1.increment();
     };
     bar1.stop();
-    jsonfile.writeFileSync(`./data/${await options.nth(i).getAttribute("value")}.json`, arr);
+    jsonfile.writeFileSync(`./data/${a}.json`, arr);
 }
-console.log("👌 完成！");
 
 main(myArgs[0]);
