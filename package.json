@@ -20,6 +20,7 @@
   "dependencies": {
     "cli-progress": "^3.11.0",
     "jsdom": "^19.0.0",
-    "jsonfile": "^6.1.0"
+    "jsonfile": "^6.1.0",
+    "mongodb": "^4.12.1"
   }
 }
