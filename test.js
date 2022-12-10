@@ -1,7 +1,6 @@
 //TODO: provide parameter for semester
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const cliProgress = require('cli-progress');
 const jsonfile = require('jsonfile');
 const myArgs = process.argv.slice(2);
@@ -36,8 +35,9 @@ async function main(a = "1102") {
             "Referer": "https://qry.nfu.edu.tw/classname.php"
         },
         "body": `pselyr=${a}&pcoursename=%25`,
-        "method": "POST",
-        retry: 3
+        "method": "POST"
+    }).catch(err => {
+        console.log(err);
     });
     const dom = new JSDOM(await res.text());
     const row = dom.window.document.querySelectorAll("tr");
@@ -56,7 +56,10 @@ async function main(a = "1102") {
             "body": `pselyr=${a}&pseqno=${row[j].cells[0].textContent}`,
             "method": "POST",
             retry: 3
+        }).catch(err => {
+            console.log(err);
         });
+
         const studom = new JSDOM(await studlist_page.text());
         const sturow = studom.window.document.querySelectorAll("td");
         for (let i = 0; i < sturow.length; ++i) {

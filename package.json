@@ -20,8 +20,6 @@
   "dependencies": {
     "cli-progress": "^3.11.0",
     "jsdom": "^19.0.0",
-    "jsonfile": "^6.1.0",
-    "node-fetch": "^3.2.10",
-    "node-fetch-retry": "^2.0.0"
+    "jsonfile": "^6.1.0"
   }
 }
