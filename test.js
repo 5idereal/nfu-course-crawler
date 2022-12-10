@@ -45,10 +45,23 @@ async function main(a = "1102") {
     const count = row.length;
     bar1.start(count - 3, 0);
     for (let j = 3; j < count; ++j) {
-        try { const list= await fetch(`https://qry.nfu.edu.tw/studlist.php?selyr=${a}&seqno=${await row[j].cells[0].textContent}`) }
-        catch (e) {
-            console.log(e)
-        };
+        let studlist = [];
+        const studlist_page = await fetch("https://qry.nfu.edu.tw/studlist_ajax.php", {
+            "headers": {
+                "accept": "text/html",
+                "content-type": "application/x-www-form-urlencoded",
+                "x-requested-with": "XMLHttpRequest",
+                "Referer": "https://qry.nfu.edu.tw/studlist.php"
+            },
+            "body": `pselyr=${a}&pseqno=${row[j].cells[0].textContent}`,
+            "method": "POST",
+            retry: 3
+        });
+        const studom = new JSDOM(await studlist_page.text());
+        const sturow = studom.window.document.querySelectorAll("td");
+        for (let i = 0; i < sturow.length; ++i) {
+            studlist.push(sturow[i].textContent);
+        }
 
         arr.push({
             "id": row[j].cells[0].textContent,
@@ -66,7 +79,7 @@ async function main(a = "1102") {
             "S": convert(row[j].cells[12].textContent),
             "U": convert(row[j].cells[13].textContent),
             "location": /[A-Z0-9]{3,}/.exec(row[j].cells[14].textContent)[0],
-            "students": ["a"]
+            "students": studlist
         });
         bar1.increment();
     };
