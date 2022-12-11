@@ -54,8 +54,18 @@ async function main(a = "1102") {
                 "Referer": "https://qry.nfu.edu.tw/studlist.php"
             },
             "body": `pselyr=${a}&pseqno=${row[j].cells[0].textContent}`,
-            "method": "POST",
-            retry: 3
+            "method": "POST"
+        }).catch(err => {
+            console.log(err);
+        });
+
+        const coursedetails_page = await fetch("https://ieet.nfu.edu.tw/coursequery/api/Course", {
+            "headers": {
+                "content-type": "application/json",
+                "Accept-Encoding": "zlib",
+            },
+            "body": "{'ClassID':'-1','CollegeID':'-1','CourseID':'0009','CourseName':'-1','DepartmentID':'-1','TeacherName':'-1','semesterID':'1111'}",
+            "method": "POST"
         }).catch(err => {
             console.log(err);
         });
@@ -65,6 +75,9 @@ async function main(a = "1102") {
         for (let i = 0; i < sturow.length; ++i) {
             studlist.push(sturow[i].textContent);
         }
+
+        const coursedetails = await coursedetails_page.json();
+        console.log(await coursedetails["content"][0]["ID"]);
 
         arr.push({
             "id": row[j].cells[0].textContent,
