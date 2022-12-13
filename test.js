@@ -59,12 +59,23 @@ async function main(a = "1102") {
             console.log(err);
         });
 
-        const coursedetails_page = await fetch("https://ieet.nfu.edu.tw/coursequery/api/Course", {
+        const courseDetails_page = await fetch("https://ieet.nfu.edu.tw/coursequery/api/Course", {
             "headers": {
                 "content-type": "application/json",
                 "Accept-Encoding": "zlib",
             },
-            "body": "{'ClassID':'-1','CollegeID':'-1','CourseID':'0009','CourseName':'-1','DepartmentID':'-1','TeacherName':'-1','semesterID':'1111'}",
+            "body": "{'ClassID':'-1','CollegeID':'-1','CourseID':'" + row[j].cells[0].textContent + "','CourseName':'-1','getUnit': 0,'DepartmentID':'-1','TeacherName':'-1','semesterID':'" + a + "'}",
+            "method": "POST"
+        }).catch(err => {
+            console.log(err);
+        });
+
+        const courseOutline_page = await fetch("https://ieet.nfu.edu.tw/coursequery/api/Course", {
+            "headers": {
+                "content-type": "application/json",
+                "Accept-Encoding": "zlib",
+            },
+            "body": "{'ClassID':'-1','CollegeID':'-1','CourseID':'" + row[j].cells[0].textContent + "','CourseName':'-1','getUnit': 1,'DepartmentID':'-1','TeacherName':'-1','semesterID':'" + a + "'}",
             "method": "POST"
         }).catch(err => {
             console.log(err);
@@ -76,16 +87,20 @@ async function main(a = "1102") {
             studlist.push(sturow[i].textContent);
         }
 
-        const coursedetails = await coursedetails_page.json();
-        console.log(await coursedetails["content"][0]["ID"]);
+        const courseDetails = await courseDetails_page.json();
+        console.log(await courseDetails["content"][0]);
+
+        const courseOutline = await courseOutline_page.json();
+        console.log(await courseOutline["content"][0]);
 
         arr.push({
             "id": row[j].cells[0].textContent,
-            "name": row[j].cells[1].textContent,
+            "chName": row[j].cells[1].textContent,
+            "enName": courseDetails["content"][0]["Eng_name"],
             "teacher": row[j].cells[6].textContent,
             "type": row[j].cells[2].textContent == "必修" ? 1 : row[j].cells[2].textContent == "選修" ? 2 : 3,
             "credit": row[j].cells[3].textContent,
-            "hours": row[j].cells[4].textContent,
+            "hour": row[j].cells[4].textContent,
             "class": row[j].cells[5].textContent,
             "M": convert(row[j].cells[7].textContent),
             "T": convert(row[j].cells[8].textContent),
@@ -95,6 +110,16 @@ async function main(a = "1102") {
             "S": convert(row[j].cells[12].textContent),
             "U": convert(row[j].cells[13].textContent),
             "location": /[A-Z0-9]{3,}/.exec(row[j].cells[14].textContent)[0],
+            "prerequisiteCourse": courseDetails["content"][0]["pre_course"],
+            "objective": courseDetails["content"][0]["course_subject"],
+            "prerequisiteAbility": courseDetails["content"][0]["pre_ability"],
+            "mainPoint": courseDetails["content"][0]["teach_point"],
+            "condition": courseDetails["content"][0]["E3_condition"],
+            "grading": courseDetails["content"][0]["E3_assessment"],
+            "method": courseDetails["content"][0]["E3_teach_type"],
+            "remark": courseDetails["content"][0]["Remark"],
+            "departmentId": courseDetails["content"][0]["Department_id"],
+            "collegeId": courseDetails["content"][0]["College_ID"],
             "students": studlist
         });
         bar1.increment();
