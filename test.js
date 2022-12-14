@@ -43,9 +43,11 @@ async function main(a = "1102") {
     const row = dom.window.document.querySelectorAll("tr");
     const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
     const count = row.length;
+    // const count = 5; for testing
     bar1.start(count - 3, 0);
     for (let j = 3; j < count; ++j) {
         let studlist = [];
+        let courseUnitList = [];
         const studlist_page = await fetch("https://qry.nfu.edu.tw/studlist_ajax.php", {
             "headers": {
                 "accept": "text/html",
@@ -88,11 +90,16 @@ async function main(a = "1102") {
         }
 
         const courseDetails = await courseDetails_page.json();
-        console.log(await courseDetails["content"][0]);
 
         const courseOutline = await courseOutline_page.json();
-        console.log(await courseOutline["content"][0]);
 
+        for (let i = 0; i < courseOutline["content"].length; i++) {
+            courseUnitList.push({
+                "unitName": courseOutline["content"][i]["Course_unit_name"],
+                "unitSubject": courseOutline["content"][i]["subject"]
+            });
+        }
+        console.log(row[j].cells[0].textContent);
         arr.push({
             "id": row[j].cells[0].textContent,
             "chName": row[j].cells[1].textContent,
@@ -110,6 +117,14 @@ async function main(a = "1102") {
             "S": convert(row[j].cells[12].textContent),
             "U": convert(row[j].cells[13].textContent),
             "location": /[A-Z0-9]{3,}/.exec(row[j].cells[14].textContent)[0],
+            "textbook": {
+                "title": courseDetails["content"][0]["BookName"],
+                "author": courseDetails["content"][0]["Author"],
+                "publisher": courseDetails["content"][0]["publish"],
+                "date": courseDetails["content"][0]["PubDate"],
+                "isbn": courseDetails["content"][0]["isbn"].replace(/-/g, ""),
+                "edition": courseDetails["content"][0]["version"]
+            },
             "prerequisiteCourse": courseDetails["content"][0]["pre_course"],
             "objective": courseDetails["content"][0]["course_subject"],
             "prerequisiteAbility": courseDetails["content"][0]["pre_ability"],
@@ -120,6 +135,7 @@ async function main(a = "1102") {
             "remark": courseDetails["content"][0]["Remark"],
             "departmentId": courseDetails["content"][0]["Department_id"],
             "collegeId": courseDetails["content"][0]["College_ID"],
+            "courseUnits": courseUnitList,
             "students": studlist
         });
         bar1.increment();
