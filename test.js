@@ -43,7 +43,7 @@ async function main(a = "1102") {
     const row = dom.window.document.querySelectorAll("tr");
     const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
     const count = row.length;
-    // const count = 5; for testing
+    //const count = 500; 
     bar1.start(count - 3, 0);
     for (let j = 3; j < count; ++j) {
         let studlist = [];
@@ -99,45 +99,49 @@ async function main(a = "1102") {
                 "unitSubject": courseOutline["content"][i]["subject"]
             });
         }
-        console.log(row[j].cells[0].textContent);
-        arr.push({
-            "id": row[j].cells[0].textContent,
-            "chName": row[j].cells[1].textContent,
-            "enName": courseDetails["content"][0]["Eng_name"],
-            "teacher": row[j].cells[6].textContent,
-            "type": row[j].cells[2].textContent == "必修" ? 1 : row[j].cells[2].textContent == "選修" ? 2 : 3,
-            "credit": row[j].cells[3].textContent,
-            "hour": row[j].cells[4].textContent,
-            "class": row[j].cells[5].textContent,
-            "M": convert(row[j].cells[7].textContent),
-            "T": convert(row[j].cells[8].textContent),
-            "W": convert(row[j].cells[9].textContent),
-            "R": convert(row[j].cells[10].textContent),
-            "F": convert(row[j].cells[11].textContent),
-            "S": convert(row[j].cells[12].textContent),
-            "U": convert(row[j].cells[13].textContent),
-            "location": /[A-Z0-9]{3,}/.exec(row[j].cells[14].textContent)[0],
-            "textbook": {
-                "title": courseDetails["content"][0]["BookName"],
-                "author": courseDetails["content"][0]["Author"],
-                "publisher": courseDetails["content"][0]["publish"],
-                "date": courseDetails["content"][0]["PubDate"],
-                "isbn": courseDetails["content"][0]["isbn"].replace(/-/g, ""),
-                "edition": courseDetails["content"][0]["version"]
-            },
-            "prerequisiteCourse": courseDetails["content"][0]["pre_course"],
-            "objective": courseDetails["content"][0]["course_subject"],
-            "prerequisiteAbility": courseDetails["content"][0]["pre_ability"],
-            "mainPoint": courseDetails["content"][0]["teach_point"],
-            "condition": courseDetails["content"][0]["E3_condition"],
-            "grading": courseDetails["content"][0]["E3_assessment"],
-            "method": courseDetails["content"][0]["E3_teach_type"],
-            "remark": courseDetails["content"][0]["Remark"],
-            "departmentId": courseDetails["content"][0]["Department_id"],
-            "collegeId": courseDetails["content"][0]["College_ID"],
-            "courseUnits": courseUnitList,
-            "students": studlist
-        });
+        try {
+            arr.push({
+                "id": row[j].cells[0].textContent,
+                "chName": row[j].cells[1].textContent,
+                "enName": courseDetails["content"][0]["Eng_name"],
+                "teacher": row[j].cells[6].textContent,
+                "type": row[j].cells[2].textContent == "必修" ? 1 : row[j].cells[2].textContent == "選修" ? 2 : 3,
+                "credit": row[j].cells[3].textContent,
+                "hour": row[j].cells[4].textContent,
+                "class": row[j].cells[5].textContent,
+                "M": convert(row[j].cells[7].textContent),
+                "T": convert(row[j].cells[8].textContent),
+                "W": convert(row[j].cells[9].textContent),
+                "R": convert(row[j].cells[10].textContent),
+                "F": convert(row[j].cells[11].textContent),
+                "S": convert(row[j].cells[12].textContent),
+                "U": convert(row[j].cells[13].textContent),
+                "location": /[A-Z0-9]{3,}/.exec(row[j].cells[14].textContent)[0],
+                "textbook": {
+                    "title": courseDetails["content"][0]["BookName"],
+                    "author": courseDetails["content"][0]["Author"],
+                    "publisher": courseDetails["content"][0]["publish"],
+                    "date": courseDetails["content"][0]["PubDate"],
+                    "isbn": courseDetails["content"][0]["isbn"].replace(/-/g, ""),
+                    "edition": courseDetails["content"][0]["version"]
+                },
+                "prerequisiteCourse": courseDetails["content"][0]["pre_course"],
+                "objective": courseDetails["content"][0]["course_subject"],
+                "prerequisiteAbility": courseDetails["content"][0]["pre_ability"],
+                "mainPoint": courseDetails["content"][0]["teach_point"],
+                "condition": courseDetails["content"][0]["E3_condition"],
+                "grading": courseDetails["content"][0]["E3_assessment"],
+                "method": courseDetails["content"][0]["E3_teach_type"],
+                "remark": courseDetails["content"][0]["Remark"],
+                "departmentId": courseDetails["content"][0]["Department_id"],
+                "collegeId": courseDetails["content"][0]["College_ID"],
+                "note": row[j].cells[15].textContent,
+                "courseUnits": courseUnitList,
+                "students": studlist
+            });
+        } catch (err) {
+            console.log(err);
+        }
         bar1.increment();
     };
     bar1.stop();
