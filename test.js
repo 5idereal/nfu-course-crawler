@@ -25,7 +25,7 @@ function convert(str) {
     }
 }
 
-async function main(a = "1102") {
+async function main(a = "1121") {
     let arr = [];
     const res = await fetch("https://qry.nfu.edu.tw/classname_ajax.php", {
         "headers": {
@@ -43,7 +43,7 @@ async function main(a = "1102") {
     const row = dom.window.document.querySelectorAll("tr");
     const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
     const count = row.length;
-    //const count = 500; 
+    //const count = 500;
     bar1.start(count - 3, 0);
     for (let j = 3; j < count; ++j) {
         let studlist = [];
